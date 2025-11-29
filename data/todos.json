@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "task": "memasak",
+    "status": "new",
+    "priority": "high"
+  },
+  {
+    "id": 2,
+    "task": "memancing",
+    "status": "new",
+    "priority": "biasa"
+  },
+  {
+    "id": 3,
+    "task": "memancingsapi",
+    "status": "new",
+    "priority": "high"
+  }
+]
