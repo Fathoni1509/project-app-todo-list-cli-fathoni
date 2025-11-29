@@ -7,14 +7,14 @@
   },
   {
     "id": 2,
-    "task": "memancing",
-    "status": "new",
+    "task": "belajar mencuci",
+    "status": "progress",
     "priority": "biasa"
   },
   {
     "id": 3,
-    "task": "memancingsapi",
-    "status": "new",
+    "task": "memasak daging",
+    "status": "completed",
     "priority": "high"
   }
 ]

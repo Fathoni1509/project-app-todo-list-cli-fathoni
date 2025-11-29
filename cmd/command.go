@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"project-app-todo-list-cli-fathoni/service"
-	"strconv"
+	"project-app-todo-list-cli-fathoni/utils"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -16,39 +16,25 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "command add task",
 	Run: func(cmd *cobra.Command, args []string) {
-		// id, _ := strconv.Atoi(args[0])
 		taskName, _ := cmd.Flags().GetString("task")
-
-		if strings.TrimSpace(taskName) == "" {
-			fmt.Println("Gagal menambahkan: judul task tidak boleh kosong")
-			return
-		}
-
 		priority, _ := cmd.Flags().GetString("priority")
 
+		if strings.TrimSpace(taskName) == "" {
+			fmt.Printf("%sError: task title must not be empty%s\n", utils.Red, utils.Reset)
+			return
+		}
+
 		if strings.TrimSpace(priority) == "" {
-			fmt.Println("Gagal menambahkan: prioritas task tidak boleh kosong")
+			priority = "low"
+		}
+
+		err := svc.AddTodo(taskName, priority)
+		if err != nil {
+			fmt.Printf("%sError: %s%s", utils.Red, err, utils.Reset)
 			return
 		}
 
-		// cek penulisan prioritas (belum)
-		priority = strings.ToLower(priority)
-		if priority != "low" && priority != "medium" && priority != "high" {
-			fmt.Println("Gagal menambahkan: status not allowed, enter status: low, medium, or high")
-			return
-		}
-
-		// err := svc.AddTodo(taskName, priority)
-		// if err != nil {
-		// 	fmt.Printf("gagal menambahkan task: %v\n", err)
-		// 	return
-		// }
-
-		svc.AddTodo(taskName, priority)
-
-		fmt.Println("task:", taskName)
-		fmt.Println("priority:", priority)
-		fmt.Printf("sukses menambahkan task: %v\n", taskName)
+		fmt.Printf("%sTask add successfully.%s\n", utils.Green, utils.Reset)
 	},
 }
 
@@ -58,7 +44,7 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := svc.ListTask()
 		if err != nil {
-			fmt.Printf("Gagal memuat data: %v\n", err)
+			fmt.Printf("%sError: %v%s\n", utils.Red, err, utils.Reset)
 		}
 	},
 }
@@ -68,14 +54,15 @@ var searchCmd = &cobra.Command{
 	Short: "command to search title task",
 	Run: func(cmd *cobra.Command, args []string) {
 		search, _ := cmd.Flags().GetString("task")
-		// if search == "" {
-		// 	fmt.Println("keyword tidak boleh kosong")
-		// }
+
+		if strings.TrimSpace(search) == "" {
+			fmt.Printf("%sError: keyword must not be empty%s", utils.Red, utils.Reset)
+			return
+		}
 
 		err := svc.SearchTask(search)
 		if err != nil {
-			fmt.Printf("Gagal menampilkan: %v\n", err)
-			return
+			fmt.Printf("%sError: %v%s\n", utils.Red, err, utils.Reset)
 		}
 	},
 }
@@ -84,24 +71,25 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "command to update task",
 	Run: func(cmd *cobra.Command, args []string) {
-		idStr, _ := cmd.Flags().GetString("id")
+		id, _ := cmd.Flags().GetInt("id")
 		taskName, _ := cmd.Flags().GetString("task")
 		status, _ := cmd.Flags().GetString("status")
 		priority, _ := cmd.Flags().GetString("priority")
 
-		if idStr == "" {
-			fmt.Println("ID tidak boleh kosong")
+		if id == 0 {
+			fmt.Printf("%sID must not be 0%s\n", utils.Red, utils.Reset)
 			return
 		}
 
 		if taskName == "" && status == "" && priority == "" {
-			fmt.Println("Error: masukkan minimal dua flag")
+			fmt.Printf("%sError: enter at least one change (task/status/priority)%s", utils.Red, utils.Reset)
 			return
 		}
 
-		id, _ := strconv.Atoi(idStr)
-
-		svc.UpdateTask(id, taskName, status, priority)
+		err := svc.UpdateTask(id, taskName, status, priority)
+		if err != nil {
+			fmt.Printf("%sError: %v%s\n", utils.Red, err, utils.Reset)
+		}
 	},
 }
 
@@ -109,33 +97,17 @@ var deleteCmd = &cobra.Command{
 	Use: "delete",
 	Short: "command to delete task",
 	Run: func(cmd *cobra.Command, args []string) {
-		idStr, _ := cmd.Flags().GetString("id")
+		id, _ := cmd.Flags().GetInt("id")
 
-		if idStr == "" {
-			fmt.Println("ID tidak boleh kosong")
-			return
+		err := svc.DeleteTask(id)
+		if err != nil {
+			fmt.Printf("%sError: %v%s\n", utils.Red, err, utils.Reset)
 		}
-
-		id, _ := strconv.Atoi(idStr)
-
-		svc.DeleteTask(id)
 	},
 }
 
-// var updatecmd = &cobra.Command{
-// 	Use: "update [id_product]",
-// 	Short: "command update product",
-// 	Run: func (cmd *cobra.Command, args []string){
-// 		id, _ := strconv.Atoi(args[0])
-// 		name, _ := cmd.Flags().GetString("name")
-// 		fmt.Println("id:", id)
-// 		fmt.Println("name_product:", name)
-// 	},
-// }
-
 func init() {
 	// registrasikan
-	// updatecmd.Flags().StringP("name", "n", "", "name of the item update")
 	rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(searchCmd)
@@ -147,16 +119,10 @@ func init() {
 
 	searchCmd.Flags().StringP("task", "t", "", "search task based on title")
 
-	updateCmd.Flags().StringP("id", "i", "", "id task")
+	updateCmd.Flags().IntP("id", "i", 0, "id task")
 	updateCmd.Flags().StringP("task", "t", "", "name of the task")
 	updateCmd.Flags().StringP("status", "s", "", "status of the task")
 	updateCmd.Flags().StringP("priority", "p", "", "priority of the task")
 
-	deleteCmd.Flags().StringP("id", "i", "", "delete task based on ID task")
-
-	// listCmd.Flags().StringP("list", "l", "", "list all task")
-	// // rootCmd.AddCommand(updatecmd)
-	// if err := rootCmd.Execute(); err != nil {
-	// 	fmt.Println(err)
-	// }
+	deleteCmd.Flags().IntP("id", "i", 0, "delete task based on ID task")
 }

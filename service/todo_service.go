@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"project-app-todo-list-cli-fathoni/model"
 	"project-app-todo-list-cli-fathoni/utils"
@@ -18,15 +17,6 @@ func NewTodoService() TodoService {
 // method add task
 func (todoservice *TodoService) AddTodo(taskName string, priority string) error {
 
-	// validasi nama task, priority
-	// if strings.TrimSpace(taskName) == "" {
-	// 	return errors.New("judul tidak boleh kosong")
-	// }
-
-	// if strings.TrimSpace(priority) == "" {
-	// 	return errors.New("priority tidak boleh kosong")
-	// }
-
 	todos, err := utils.ReadTasksFromFile()
 	if err != nil {
 		return err
@@ -35,7 +25,7 @@ func (todoservice *TodoService) AddTodo(taskName string, priority string) error 
 	// cek duplikat
 	for _, t := range todos {
 		if strings.EqualFold(t.Task, taskName) {
-			return fmt.Errorf("tugas %s sudah ada", taskName)
+			return fmt.Errorf("%serror: the task title %s already exists%s", utils.Red, taskName, utils.Reset)
 		}
 	}
 
@@ -65,24 +55,13 @@ func (todoservice *TodoService) ListTask() error {
 		return err
 	}
 
-	fmt.Println("List Task")
-	if len(todos) == 0 {
-		fmt.Println("tidak ada tugas")
-		return nil
-	}
-
-	for _, t := range todos {
-		fmt.Printf("ID: %d, Task: %s, Status: %s, Priority: %s\n", t.ID, t.Task, t.Status, t.Priority)
-	}
+	utils.PrintTabel(todos)
 	// argumen command blum dicek
 	return nil
 }
 
 // method search task
 func (todoservice *TodoService) SearchTask(search string) error {
-	if strings.TrimSpace(search) == "" {
-		return errors.New("keyword tidak boleh kosong")
-	}
 
 	todos, err := utils.ReadTasksFromFile()
 	
@@ -97,15 +76,7 @@ func (todoservice *TodoService) SearchTask(search string) error {
 		}
 	}
 
-	fmt.Println("Hasil Pencarian")
-	if len(found) == 0 {
-		fmt.Println("tidak ada tugas yang sesuai")
-		return nil
-	}
-
-	for _, t := range found {
-		fmt.Printf("ID: %d, Task: %s, Status: %s, Priority: %s\n", t.ID, t.Task, t.Status, t.Priority)
-	}
+	utils.PrintTabel(found)
 
 	return nil
 }
@@ -118,56 +89,49 @@ func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority st
 		return err
 	}
 
-	found := false
-	var success bool
-
+	foundIndex := -1
 	for i, t := range todos {
-		if id == t.ID {
-			found = true
-			success = true
-
-			if taskName != "" {
-				todos[i].Task = taskName
-			}
-
-			if status != "" {
-				status = strings.ToLower(status)
-				switch status{
-				case "pending", "progress", "completed":
-					todos[i].Status = status
-				default:
-					fmt.Println("status not allowed, enter status: pending, progress, or completed")
-					success = false
-				}
-			}
-
-			if priority != "" {
-				priority = strings.ToLower(priority)
-				switch priority{
-				case "low", "medium", "high":
-					todos[i].Priority = priority
-				default:
-					fmt.Println("priority not allowed, enter priority: low, medium, or high")
-					success = false
-				}
-			}
-
+		if t.ID == id {
+			foundIndex = i
 			break
 		}
 	}
 
-	if !found {
-		fmt.Println("ID task not found")
-		return nil
-	}
-	
-	if !success {
-		fmt.Printf("Update id task:%d failed", id)
-		return nil
+	if foundIndex == -1 {
+		return  fmt.Errorf("%serror: task id %d not found%s", utils.Red, id, utils.Reset)
 	}
 
-	fmt.Printf("Update id task:%d success", id)
-	return utils.WriteTasksToFile(todos)
+	if taskName != "" {
+		todos[foundIndex].Task = taskName
+	}
+
+	if status != "" {
+		status = strings.ToLower(status)
+		switch status{
+		case "new", "pending", "progress", "completed":
+			todos[foundIndex].Status = status
+		default:
+			return fmt.Errorf("%s error: status not allowed, enter status: new, pending, progress, or completed%s", utils.Red, utils.Reset)
+		}
+	}
+
+	if priority != "" {
+		priority = strings.ToLower(priority)
+		switch priority{
+		case "low", "medium", "high":
+			todos[foundIndex].Priority = priority
+		default:
+			return fmt.Errorf("%serror: priority not allowed, enter priority: low, medium, or high%s", utils.Red, utils.Reset)
+		}
+	}
+
+	err = utils.WriteTasksToFile(todos)
+	if err != nil {
+		return  err
+	}
+
+	fmt.Printf("%sTask updated successfully.%s", utils.Green, utils.Reset)
+	return nil
 }
 
 // method delete
@@ -191,10 +155,13 @@ func (todoservice *TodoService) DeleteTask(id int) error {
 	}
 
 	if !found {
-		fmt.Printf("Delete failed: ID task %v not found\n", id)
-		return nil
+		return fmt.Errorf("%serror: delete failed, task %d not found%s", utils.Red, id, utils.Reset)
 	}
 
-	fmt.Printf("Delete task with ID %v success\n", id)
-	return utils.WriteTasksToFile(newTodos)
+	err = utils.WriteTasksToFile(newTodos)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%sTask delete successfully%s\n", utils.Green, utils.Reset)
+	return nil
 }
