@@ -12,6 +12,7 @@ import (
 // inisialisasi service
 var svc = service.NewTodoService()
 
+// command untuk menambahkan task
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "command add task",
@@ -38,6 +39,7 @@ var addCmd = &cobra.Command{
 	},
 }
 
+// command untuk melihat daftar task
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "command to view all task",
@@ -49,6 +51,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
+// command untuk mencari task
 var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "command to search title task",
@@ -67,6 +70,7 @@ var searchCmd = &cobra.Command{
 	},
 }
 
+// command untuk update task
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "command to update task",
@@ -93,6 +97,7 @@ var updateCmd = &cobra.Command{
 	},
 }
 
+// command untuk hapus task
 var deleteCmd = &cobra.Command{
 	Use: "delete",
 	Short: "command to delete task",
@@ -114,15 +119,19 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(deleteCmd)
 
+	// tambahkan task
 	addCmd.Flags().StringP("task", "t", "", "name of the task")
 	addCmd.Flags().StringP("priority", "p", "", "priority of the task")
 
+	// cari task
 	searchCmd.Flags().StringP("task", "t", "", "search task based on title")
 
+	// update task
 	updateCmd.Flags().IntP("id", "i", 0, "id task")
 	updateCmd.Flags().StringP("task", "t", "", "name of the task")
 	updateCmd.Flags().StringP("status", "s", "", "status of the task")
 	updateCmd.Flags().StringP("priority", "p", "", "priority of the task")
 
+	// hapus task
 	deleteCmd.Flags().IntP("id", "i", 0, "delete task based on ID task")
 }

@@ -4,17 +4,5 @@
     "task": "memasak",
     "status": "new",
     "priority": "high"
-  },
-  {
-    "id": 2,
-    "task": "belajar mencuci",
-    "status": "progress",
-    "priority": "biasa"
-  },
-  {
-    "id": 3,
-    "task": "memasak daging",
-    "status": "completed",
-    "priority": "high"
   }
 ]

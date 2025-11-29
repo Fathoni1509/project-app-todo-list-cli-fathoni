@@ -7,6 +7,7 @@ import (
 	"text/tabwriter"
 )
 
+// warna
 const (
 	Reset  = "\033[0m"
 	Red    = "\033[31m"
@@ -15,6 +16,7 @@ const (
 	Blue   = "\033[34m"
 )
 
+// atur warna untuk status
 func colorStatus(status string) string {
 	switch status {
 	case "new":
@@ -36,6 +38,7 @@ func PrintTabel(todos []model.Todo) {
 		return
 	}
 
+	// bikin tabel
 	table := tabwriter.NewWriter(os.Stdout, 21, 0, 1, ' ', 0)
 
 	fmt.Println("===================================== List Tasks ====================================")

@@ -10,13 +10,14 @@ import (
 
 type TodoService struct{}
 
+// constractor
 func NewTodoService() TodoService {
 	return TodoService{}
 }
 
-// method add task
+// method add todo
 func (todoservice *TodoService) AddTodo(taskName string, priority string) error {
-
+	// baca file json
 	todos, err := utils.ReadTasksFromFile()
 	if err != nil {
 		return err
@@ -43,32 +44,33 @@ func (todoservice *TodoService) AddTodo(taskName string, priority string) error 
 		Priority: priority,
 	}
 
+	// tambahkan ke file json
 	todos = append(todos, newTodo)
 	return utils.WriteTasksToFile(todos)
 }
 
 // method list
 func (todoservice *TodoService) ListTask() error {
+	// baca file json
 	todos, err := utils.ReadTasksFromFile()
-	
 	if err != nil {
 		return err
 	}
 
+	// cetak tabel
 	utils.PrintTabel(todos)
-	// argumen command blum dicek
 	return nil
 }
 
 // method search task
 func (todoservice *TodoService) SearchTask(search string) error {
-
+	// baca file json
 	todos, err := utils.ReadTasksFromFile()
-	
 	if err != nil {
 		return err
 	}
 
+	// tampung task yang ditemukan
 	var found []model.Todo
 	for _, t := range todos {
 		if strings.Contains(strings.ToLower(t.Task), strings.ToLower(search)){
@@ -76,6 +78,7 @@ func (todoservice *TodoService) SearchTask(search string) error {
 		}
 	}
 
+	// cetak tabel
 	utils.PrintTabel(found)
 
 	return nil
@@ -83,12 +86,13 @@ func (todoservice *TodoService) SearchTask(search string) error {
 
 // method update
 func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority string) error {
+	// baca file json
 	todos, err := utils.ReadTasksFromFile()
-
 	if err != nil {
 		return err
 	}
 
+	// temukan id task yang mau diupdate
 	foundIndex := -1
 	for i, t := range todos {
 		if t.ID == id {
@@ -97,14 +101,17 @@ func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority st
 		}
 	}
 
+	// jika id tidak ketemu
 	if foundIndex == -1 {
 		return  fmt.Errorf("%serror: task id %d not found%s", utils.Red, id, utils.Reset)
 	}
 
+	// update task name
 	if taskName != "" {
 		todos[foundIndex].Task = taskName
 	}
 
+	// update status task
 	if status != "" {
 		status = strings.ToLower(status)
 		switch status{
@@ -115,6 +122,7 @@ func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority st
 		}
 	}
 
+	// update priority
 	if priority != "" {
 		priority = strings.ToLower(priority)
 		switch priority{
@@ -125,6 +133,7 @@ func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority st
 		}
 	}
 
+	// tulis ke file json
 	err = utils.WriteTasksToFile(todos)
 	if err != nil {
 		return  err
@@ -136,16 +145,18 @@ func (todoservice *TodoService) UpdateTask(id int, taskName, status, priority st
 
 // method delete
 func (todoservice *TodoService) DeleteTask(id int) error {
+	// baca file json
 	todos, err := utils.ReadTasksFromFile()
-
 	if err != nil {
 		return err
 	}
 
+	// tampung todo yang tidak dihapus
 	var newTodos []model.Todo
 
 	found := false
 
+	// cari id task yang mau dihapus
 	for _, t := range todos {
 		if id == t.ID {
 			found = true
@@ -154,10 +165,12 @@ func (todoservice *TodoService) DeleteTask(id int) error {
 		newTodos = append(newTodos, t)
 	}
 
+	// id task tidak ketemu
 	if !found {
 		return fmt.Errorf("%serror: delete failed, task %d not found%s", utils.Red, id, utils.Reset)
 	}
 
+	// tulis ke file json
 	err = utils.WriteTasksToFile(newTodos)
 	if err != nil {
 		return err

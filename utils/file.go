@@ -7,6 +7,7 @@ import (
 	"project-app-todo-list-cli-fathoni/model"
 )
 
+// path file json untuk simpan todo
 const TaskFilePath = "data/todos.json"
 
 // cek direktori dan file
