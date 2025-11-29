@@ -23,10 +23,16 @@ func (todoservice *TodoService) AddTodo(taskName string, priority string) error 
 		return err
 	}
 
+	// cek priority
+	priority = strings.ToLower(priority)
+	if priority != "low" && priority != "medium" && priority != "high" {
+		return fmt.Errorf("%serror: priority not allowed, enter priority: low, medium, or high%s", utils.Red, utils.Reset)
+	}
+
 	// cek duplikat
 	for _, t := range todos {
 		if strings.EqualFold(t.Task, taskName) {
-			return fmt.Errorf("%serror: the task title %s already exists%s", utils.Red, taskName, utils.Reset)
+			return fmt.Errorf("%serror: the task title '%s' already exists%s", utils.Red, taskName, utils.Reset)
 		}
 	}
 
